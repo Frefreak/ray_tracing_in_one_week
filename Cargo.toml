@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 vec3 = { path = "vec3" }
+ppm = { path = "ppm" }
 
 [workspace]
 members = ["ppm", "vec3"]

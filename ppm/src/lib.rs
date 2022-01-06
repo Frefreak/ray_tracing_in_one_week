@@ -1,7 +1,7 @@
 use std::{path::Path, io::Write, time::SystemTime};
 
 #[derive(Clone)]
-pub struct RGB(u8, u8, u8);
+pub struct RGB(pub u8, pub u8, pub u8);
 
 pub struct PPM {
     pub width: u32,
@@ -33,16 +33,18 @@ impl PPM {
     {
         let t = SystemTime::now();
         println!("saving to {:?}", fp.as_ref());
-        let mut f = std::fs::File::create(fp)?;
-        f.write(b"P3\n")?;
-        f.write(format!("{} {}\n", self.width, self.height).as_bytes())?;
-        f.write(b"255\n")?;
+        let mut content = String::new();
+        content.push_str("P3\n");
+        content.push_str(&format!("{} {}\n", self.width, self.height));
+        content.push_str("255\n");
         for row in &self.pixels {
             for c in row {
-                f.write(format!("{} {} {} ", c.0, c.1, c.2).as_bytes())?;
+                content.push_str(&format!("{} {} {} ", c.0, c.1, c.2));
             }
-            f.write(b"\n")?;
+            content.push('\n');
         }
+
+        std::fs::write(fp, content)?;
         println!("time: {:?}", t.elapsed());
         Ok(())
     }

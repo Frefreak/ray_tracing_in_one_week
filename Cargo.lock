@@ -10,6 +10,7 @@ version = "0.1.0"
 name = "ray_tracing_in_one_week"
 version = "0.1.0"
 dependencies = [
+ "ppm",
  "vec3",
 ]
 
