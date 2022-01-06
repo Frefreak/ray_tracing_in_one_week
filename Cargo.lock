@@ -5,6 +5,9 @@ version = 3
 [[package]]
 name = "ppm"
 version = "0.1.0"
+dependencies = [
+ "vec3",
+]
 
 [[package]]
 name = "ray_tracing_in_one_week"

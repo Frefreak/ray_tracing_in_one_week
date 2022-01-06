@@ -1,10 +1,10 @@
 use std::ops;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vec3(pub f64, pub f64, pub f64);
 
-pub use Vec3 as Color;
-pub use Vec3 as Point3;
+pub type Color = Vec3;
+pub type Point3 = Vec3;
 
 #[macro_export]
 macro_rules! v3 {

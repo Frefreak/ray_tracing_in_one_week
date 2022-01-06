@@ -1,16 +1,47 @@
-use ppm::{PPM, RGB};
+use ppm::PPM;
+use ray::Ray;
+use vec3::{v3, Color};
+
+mod ray;
 
 fn main() {
-    let width = 256;
-    let height = 256;
-    let mut image = PPM::new(width, height);
-    let b = (255.999 * 0.25) as u8;
-    for j in (0..height).rev() {
-        for i in 0..width {
-            let r = i as f32 / (width as f32 - 1.) * 255.999;
-            let g = j as f32 / (height as f32 - 1.) * 255.999;
-            image.set((height - j -1) as usize, i as usize, RGB(r as u8, g as u8, b));
+    // image
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width = 800_u32;
+    let image_height = (image_width as f64 / aspect_ratio) as u32;
+    let mut image = PPM::new(image_width, image_height);
+
+    // camera
+    let viewport_height = 4.0;
+    let viewport_width = viewport_height * aspect_ratio;
+    let focal_length = 0.;
+
+    let origin = v3!(0., 0., 0.);
+    let horizontal = v3!(viewport_width, 0., 0.);
+    let vertical = v3!(0., viewport_height, 0.);
+    // unintuitive
+    // let lower_left_corner = origin - horizontal / 2. - vertical / 2. - v3!(0., 0., focal_length);
+    let lower_left_corner = v3!(-2., -1., -focal_length);
+    println!("{:?}", lower_left_corner);
+
+    // render
+    for j in (0..image_height).rev() {
+        for i in 0..image_width {
+            let u = i as f64 / (image_width as f64 - 1.);
+            let v = j as f64 / (image_height as f64 - 1.);
+            let ray = Ray::new(
+                origin,
+                lower_left_corner + u * horizontal + v * vertical - origin,
+            );
+            let color = ray_color(&ray);
+            image.set((image_height - j - 1) as usize, i as usize, color);
         }
     }
     image.save("test.ppm").unwrap();
+}
+
+fn ray_color(ray: &Ray) -> Color {
+    let unit = ray.direction().unit_vector();
+    let t = 0.5 * (unit.y() + 1.);
+    return (1.0 - t) * v3!(1., 1., 1.) + t * v3!(0.5, 0.7, 1.0);
 }

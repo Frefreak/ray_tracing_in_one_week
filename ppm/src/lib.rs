@@ -1,6 +1,9 @@
-use std::{path::Path, io::Write, time::SystemTime};
+use std::{path::Path, time::SystemTime};
 
-#[derive(Clone)]
+use vec3::Color;
+
+/// RGB color
+#[derive(Debug, Clone)]
 pub struct RGB(pub u8, pub u8, pub u8);
 
 pub struct PPM {
@@ -23,8 +26,12 @@ impl PPM {
     }
 
     // no bounding check for performance
-    pub fn set(&mut self, row: usize, column: usize, color: RGB) {
-        self.pixels[row][column] = color;
+    pub fn set(&mut self, row: usize, column: usize, color: Color) {
+        self.pixels[row][column] = RGB(
+            (color.0 * 255.99) as u8,
+            (color.1 * 255.99) as u8,
+            (color.2 * 255.99) as u8,
+        );
     }
 
     pub fn save<F>(&self, fp: F) -> std::io::Result<()>
@@ -52,19 +59,21 @@ impl PPM {
 
 #[cfg(test)]
 mod test {
-    use crate::{PPM, RGB};
+    use vec3::v3;
+
+    use crate::PPM;
 
     #[test]
     fn test_generate_img() {
         let width = 256;
         let height = 256;
         let mut image = PPM::new(width, height);
-        let b = (255.999 * 0.25) as u8;
+        let b = 0.25;
         for j in (0..height).rev() {
             for i in 0..width {
-                let r = i as f32 / (width as f32 - 1.) * 255.999;
-                let g = j as f32 / (height as f32 - 1.) * 255.999;
-                image.set((height - j -1) as usize, i as usize, RGB(r as u8, g as u8, b));
+                let r = i as f64 / (width as f64 - 1.);
+                let g = j as f64 / (height as f64 - 1.);
+                image.set((height - j - 1) as usize, i as usize, v3!(r, g, b));
             }
         }
         assert!(image.save("test.ppm").is_ok());
