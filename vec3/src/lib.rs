@@ -1,6 +1,6 @@
 use std::ops;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vec3(pub f64, pub f64, pub f64);
 
 pub type Color = Vec3;
@@ -63,6 +63,13 @@ macro_rules! impl_binary_op {
                 Vec3(self.0 $op rhs.0, self.1 $op rhs.1, self.2 $op rhs.2)
             }
         }
+        impl<'a, 'b> ops::$trait<&'b Vec3> for &'a Vec3 {
+            type Output = Vec3;
+
+            fn $method_name(self, rhs: &'b Vec3) -> Self::Output {
+                Vec3(self.0 $op rhs.0, self.1 $op rhs.1, self.2 $op rhs.2)
+            }
+        }
         impl ops::$trait<Ty> for Vec3 {
             type Output = Vec3;
 
@@ -92,3 +99,19 @@ impl_binary_op!(Add, add, +);
 impl_binary_op!(Sub, sub, -);
 impl_binary_op!(Mul, mul, *);
 impl_binary_op!(Div, div, /);
+
+#[cfg(test)]
+mod test {
+    use crate::Vec3;
+
+    #[test]
+    fn test_op() {
+        let v1 = Vec3(1., 2., 3.);
+        let v2 = Vec3(4., 5., 6.);
+        assert_eq!(v1+v2, Vec3(5., 7., 9.));
+        assert_eq!(v1-v2, Vec3(-3., -3., -3.));
+        assert_eq!(v1*v2, Vec3(4., 10., 18.));
+        assert_eq!(v1/v2, Vec3(0.25, 0.4, 0.5));
+        assert_eq!(v1*3., Vec3(3., 6., 9.));
+    }
+}
