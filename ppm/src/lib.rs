@@ -1,5 +1,6 @@
 use std::{path::Path, time::SystemTime};
 
+use utils::clamp;
 use vec3::Color;
 
 /// RGB color
@@ -35,6 +36,14 @@ impl PPM {
             (color.1 * 255.99) as u8,
             (color.2 * 255.99) as u8,
         );
+    }
+
+    pub fn set_with_samples(&mut self, row: usize, column: usize, color: Color, nsamples: usize) {
+        let color = color / nsamples as f64;
+        let r = clamp(color.0, 0., 0.999) * 256.;
+        let g = clamp(color.1, 0., 0.999) * 256.;
+        let b = clamp(color.2, 0., 0.999) * 256.;
+        self.pixels[row][column] = RGB(r as u8, g as u8, b as u8);
     }
 
     pub fn save<F>(&self, fp: F) -> std::io::Result<()>
