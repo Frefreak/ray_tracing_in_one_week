@@ -98,6 +98,9 @@ dependencies = [
 [[package]]
 name = "vec3"
 version = "0.1.0"
+dependencies = [
+ "utils",
+]
 
 [[package]]
 name = "wasi"
