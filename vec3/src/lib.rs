@@ -69,6 +69,11 @@ impl Vec3 {
             random_double_range(min, max),
         )
     }
+
+    pub fn near_zero(&self) -> bool {
+        const S: f64 = 1e-8;
+        self.0.abs() < S && self.1.abs() < S && self.2.abs() < S
+    }
 }
 
 pub fn random_in_unit_sphere() -> Vec3 {
@@ -85,12 +90,30 @@ pub fn random_unit_vector() -> Vec3 {
     random_in_unit_sphere().unit_vector()
 }
 
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    v - 2. * v.dot(n) * n
+}
+
 macro_rules! impl_binary_op {
     ($trait:ident, $method_name:ident, $op:tt) => {
         impl ops::$trait<Vec3> for Vec3 {
             type Output = Vec3;
 
             fn $method_name(self, rhs: Self) -> Self::Output {
+                Vec3(self.0 $op rhs.0, self.1 $op rhs.1, self.2 $op rhs.2)
+            }
+        }
+        impl ops::$trait<&Vec3> for Vec3 {
+            type Output = Vec3;
+
+            fn $method_name(self, rhs: &Self) -> Self::Output {
+                Vec3(self.0 $op rhs.0, self.1 $op rhs.1, self.2 $op rhs.2)
+            }
+        }
+        impl ops::$trait<Vec3> for &Vec3 {
+            type Output = Vec3;
+
+            fn $method_name(self, rhs: Vec3) -> Self::Output {
                 Vec3(self.0 $op rhs.0, self.1 $op rhs.1, self.2 $op rhs.2)
             }
         }
@@ -108,10 +131,24 @@ macro_rules! impl_binary_op {
                 Vec3(self.0 $op rhs, self.1 $op rhs, self.2 $op rhs)
             }
         }
+        impl ops::$trait<Ty> for &Vec3 {
+            type Output = Vec3;
+
+            fn $method_name(self, rhs: Ty) -> Vec3 {
+                Vec3(self.0 $op rhs, self.1 $op rhs, self.2 $op rhs)
+            }
+        }
         impl ops::$trait<Vec3> for Ty {
             type Output = Vec3;
 
             fn $method_name(self, rhs: Vec3) -> Vec3 {
+                Vec3(self $op rhs.0, self $op rhs.1, self $op rhs.2)
+            }
+        }
+        impl ops::$trait<&Vec3> for Ty {
+            type Output = Vec3;
+
+            fn $method_name(self, rhs: &Vec3) -> Vec3 {
                 Vec3(self $op rhs.0, self $op rhs.1, self $op rhs.2)
             }
         }

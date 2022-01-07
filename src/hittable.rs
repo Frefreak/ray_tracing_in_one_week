@@ -2,12 +2,13 @@ use std::sync::Arc;
 
 use vec3::{Point3, Vec3, v3};
 
-use crate::ray::Ray;
+use crate::{ray::Ray, material::Material};
 
 #[derive(Clone)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
+    pub mat_ptr: Option<Arc<dyn Material>>,
     pub t: f64,
     pub front_face: bool,
 }
@@ -17,6 +18,7 @@ impl HitRecord {
         Self {
             p: v3!(0., 0., 0.),
             normal: v3!(0., 0., 0.),
+            mat_ptr: None,
             t: 0.,
             front_face: false,
         }
