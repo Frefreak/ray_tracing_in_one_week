@@ -27,6 +27,9 @@ impl PPM {
 
     // no bounding check for performance
     pub fn set(&mut self, row: usize, column: usize, color: Color) {
+        // assert!(color.0 >= 0. && color.0 <= 1.);
+        // assert!(color.1 >= 0. && color.1 <= 1.);
+        // assert!(color.2 >= 0. && color.2 <= 1.);
         self.pixels[row][column] = RGB(
             (color.0 * 255.99) as u8,
             (color.1 * 255.99) as u8,

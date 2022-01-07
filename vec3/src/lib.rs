@@ -9,7 +9,7 @@ pub type Point3 = Vec3;
 #[macro_export]
 macro_rules! v3 {
     ($x:expr, $y:expr, $z:expr) => {
-        vec3::Vec3($x, $y, $z)
+        $crate::Vec3($x, $y, $z)
     };
 }
 
@@ -95,6 +95,15 @@ impl ops::Neg for Vec3 {
     }
 }
 
+impl ops::Neg for &Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Self::Output {
+        Vec3(-self.0, -self.1, -self.2)
+    }
+}
+
+
 impl_binary_op!(Add, add, +);
 impl_binary_op!(Sub, sub, -);
 impl_binary_op!(Mul, mul, *);
@@ -102,16 +111,14 @@ impl_binary_op!(Div, div, /);
 
 #[cfg(test)]
 mod test {
-    use crate::Vec3;
-
     #[test]
     fn test_op() {
-        let v1 = Vec3(1., 2., 3.);
-        let v2 = Vec3(4., 5., 6.);
-        assert_eq!(v1+v2, Vec3(5., 7., 9.));
-        assert_eq!(v1-v2, Vec3(-3., -3., -3.));
-        assert_eq!(v1*v2, Vec3(4., 10., 18.));
-        assert_eq!(v1/v2, Vec3(0.25, 0.4, 0.5));
-        assert_eq!(v1*3., Vec3(3., 6., 9.));
+        let v1 = v3!(1., 2., 3.);
+        let v2 = v3!(4., 5., 6.);
+        assert_eq!(v1+v2, v3!(5., 7., 9.));
+        assert_eq!(v1-v2, v3!(-3., -3., -3.));
+        assert_eq!(v1*v2, v3!(4., 10., 18.));
+        assert_eq!(v1/v2, v3!(0.25, 0.4, 0.5));
+        assert_eq!(v1*3., v3!(3., 6., 9.));
     }
 }
