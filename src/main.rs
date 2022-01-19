@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use camera::Camera;
 use hittable::{HitRecord, Hittable, HittableList};
-use material::{Lambertian, Metal};
+use material::{Lambertian, Metal, Dielectric};
 use ppm::PPM;
 use ray::Ray;
 use sphere::Sphere;
@@ -28,12 +28,13 @@ fn main() {
     // World
     let mut world = HittableList::new();
     let material_ground = Arc::new(Lambertian::new(&v3!(0.8, 0.8, 0.)));
-    let material_center = Arc::new(Lambertian::new(&v3!(0.7, 0.3, 0.3)));
-    let material_left = Arc::new(Metal::new(&v3!(0.8, 0.8, 0.8), 0.3));
-    let material_right = Arc::new(Metal::new(&v3!(0.8, 0.6, 0.2), 1.0));
+    let material_center = Arc::new(Lambertian::new(&v3!(0.1, 0.2, 0.5)));
+    let material_left = Arc::new(Dielectric::new(1.5));
+    let material_right = Arc::new(Metal::new(&v3!(0.8, 0.6, 0.2), 0.0));
     world.add(Arc::new(Sphere::new(v3!(0., -100.5, -1.), 100., material_ground)));
     world.add(Arc::new(Sphere::new(v3!(0., 0., -1.), 0.5, material_center)));
-    world.add(Arc::new(Sphere::new(v3!(-1., 0., -1.), 0.5, material_left)));
+    world.add(Arc::new(Sphere::new(v3!(-1., 0., -1.), 0.5, material_left.clone())));
+    world.add(Arc::new(Sphere::new(v3!(-1., 0., -1.), -0.4, material_left)));
     world.add(Arc::new(Sphere::new(v3!(1., 0., -1.), 0.5, material_right)));
 
     // camera

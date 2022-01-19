@@ -94,6 +94,44 @@ pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
     v - 2. * v.dot(n) * n
 }
 
+/// From: <https://raytracing.github.io/books/RayTracingInOneWeekend.html>
+///
+/// In order to determine the direction of the refracted ray, we have to solve for
+/// $\sin\theta^\prime$:
+/// $$\sin \theta^\prime = \frac{\eta}{\eta^\prime}\cdot \sin \theta $$
+/// On the refracted side of the surface there is a refracted ray
+/// $\mathbf{R}^\prime$ and a normal $\mathbf{n}^\prime$, and there
+/// exists an angle, $\theta^\prime$, between them. We can split
+/// $\mathbf{R}^\prime$ into the parts of the ray that are perpendicular
+/// to $\mathbf{n}^\prime$ and parallel to $\mathbf{n}^\prime$:
+/// $$ \mathbf{R}^\prime = \mathbf{R}^\prime_\perp +
+/// \mathbf{R}^\prime_\parallel$$
+/// If we solve for $\mathbf{R}^\prime_\perp$ and $\mathbf{R}^\prime_\parallel$
+/// we get:
+/// $$ \mathbf{R}^\prime_\perp = \frac{\eta}{\eta^\prime}
+/// (\mathbf{R} + \cos \theta\mathbf{n}) $$
+/// $$ \mathbf{R}^\prime_\parallel = -\sqrt{1 - |\mathbf{R}^\prime_\perp|^2
+/// }\mathbf{n}$$
+/// We still need to solve for $\cos \theta$. It is well known that the
+/// dot product of two vectors can be explained in terms of the cosine of
+/// the angle between them:
+/// $$ \mathbf{a} \cdot \mathbf{b} = |\mathbf{a}||\mathbf{b}|\cos \theta $$
+/// If we restrict $\mathbf{a}$ and $\mathbf{b}$ to be unit vectors:
+/// $$ \mathbf{a}\cdot\mathbf{b} = \cos \theta$$
+/// We can now write $\mathbf{R}^\prime_\perp$ in terms of known quantities:
+/// $$ \mathbf{R}^\prime_\perp = \frac{\eta}{\eta^\prime}
+/// (\mathbf{R} + (-\mathbf{R}\cdot\mathbf{n})\mathbf{n}) $$
+pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
+    let cos_theta = if -uv.dot(n) <  1. {
+        -uv.dot(n)
+    } else {
+        1.
+    };
+    let r_out_perp = etai_over_etat * (uv + cos_theta * n);
+    let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * n;
+    return r_out_parallel + r_out_perp;
+}
+
 macro_rules! impl_binary_op {
     ($trait:ident, $method_name:ident, $op:tt) => {
         impl ops::$trait<Vec3> for Vec3 {
