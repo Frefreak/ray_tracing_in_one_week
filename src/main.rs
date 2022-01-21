@@ -55,13 +55,13 @@ fn main() {
     world.add(Arc::new(Sphere::new(v3!(1., 0., -1.), 0.5, material_right)));
 
     // camera
+    let lookfrom = v3!(3., 3., 2.);
+    let lookat = v3!(0., 0., -1.);
+    let vup = v3!(0., 1., 0.);
+    let dist_to_focus = (lookfrom - lookat).length();
+    let aperture = 2.;
     let camera = Camera::new(
-        v3!(-2., 2., 1.),
-        v3!(0., 0., -1.),
-        v3!(0., 1., 0.),
-        20.0,
-        aspect_ratio,
-    );
+        lookfrom, lookat ,vup, 20., aspect_ratio, aperture, dist_to_focus);
 
     // render
     for j in (0..image_height).rev() {
