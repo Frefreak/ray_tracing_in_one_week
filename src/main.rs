@@ -2,18 +2,18 @@ use std::sync::Arc;
 
 use camera::Camera;
 use hittable::{Hittable, HittableList};
-use material::{Lambertian, Metal, Dielectric};
+use material::{Dielectric, Lambertian, Metal};
 use ppm::PPM;
 use ray::Ray;
 use sphere::Sphere;
-use utils::random_double;
+use utils::{random_double, PI};
 use vec3::{v3, Color};
 
-mod ray;
-mod hittable;
-mod sphere;
 mod camera;
+mod hittable;
 mod material;
+mod ray;
+mod sphere;
 
 const MAX_DEPTH: u32 = 50;
 const NSAMPLES: usize = 100;
@@ -26,20 +26,42 @@ fn main() {
     let mut image = PPM::new(image_width, image_height);
 
     // World
+    let r = (PI / 4.).cos();
     let mut world = HittableList::new();
     let material_ground = Arc::new(Lambertian::new(&v3!(0.8, 0.8, 0.)));
     let material_center = Arc::new(Lambertian::new(&v3!(0.1, 0.2, 0.5)));
     let material_left = Arc::new(Dielectric::new(1.5));
-
     let material_right = Arc::new(Metal::new(&v3!(0.8, 0.6, 0.2), 0.0));
-    world.add(Arc::new(Sphere::new(v3!(0., -100.5, -1.), 100., material_ground)));
-    world.add(Arc::new(Sphere::new(v3!(0., 0., -1.), 0.5, material_center)));
-    world.add(Arc::new(Sphere::new(v3!(-1., 0., -1.), 0.5, material_left.clone())));
-    world.add(Arc::new(Sphere::new(v3!(-1., 0., -1.), -0.4, material_left)));
+    world.add(Arc::new(Sphere::new(
+        v3!(0., -100.5, -1.),
+        100.,
+        material_ground,
+    )));
+    world.add(Arc::new(Sphere::new(
+        v3!(0., 0., -1.),
+        0.5,
+        material_center,
+    )));
+    world.add(Arc::new(Sphere::new(
+        v3!(-1., 0., -1.),
+        0.5,
+        material_left.clone(),
+    )));
+    world.add(Arc::new(Sphere::new(
+        v3!(-1., 0., -1.),
+        -0.4,
+        material_left,
+    )));
     world.add(Arc::new(Sphere::new(v3!(1., 0., -1.), 0.5, material_right)));
 
     // camera
-    let camera = Camera::new();
+    let camera = Camera::new(
+        v3!(-2., 2., 1.),
+        v3!(0., 0., -1.),
+        v3!(0., 1., 0.),
+        20.0,
+        aspect_ratio,
+    );
 
     // render
     for j in (0..image_height).rev() {
@@ -65,7 +87,10 @@ fn ray_color(ray: &Ray, world: &dyn Hittable, depth: u32) -> Color {
     if let Some(rec) = world.hit(ray, 0.001, utils::INFINITY) {
         let mut scattered = Ray::new(v3!(0., 0., 0.), v3!(0., 0., 0.));
         let mut attenuation = v3!(1., 1., 1.);
-        if rec.material.scatter(ray, &rec, &mut attenuation, &mut scattered) {
+        if rec
+            .material
+            .scatter(ray, &rec, &mut attenuation, &mut scattered)
+        {
             return attenuation * ray_color(&scattered, world, depth - 1);
         }
         return v3!(0., 0., 0.);
