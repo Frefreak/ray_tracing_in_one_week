@@ -17,12 +17,12 @@ mod ray;
 mod sphere;
 
 const MAX_DEPTH: u32 = 50;
-const NSAMPLES: usize = 500;
+const NSAMPLES: usize = 100;
 
 fn main() {
     // image
     let aspect_ratio = 3.0 / 2.0;
-    let image_width = 200_u32;
+    let image_width = 800_u32;
     let image_height = (image_width as f64 / aspect_ratio) as u32;
     let image = PPM::new(image_width, image_height);
     let the_image = Arc::new(Mutex::new(image));
@@ -41,6 +41,7 @@ fn main() {
 
     // render
     (0..image_height).collect::<Vec<_>>().par_iter().rev().for_each(|j| {
+    // for j in (0..image_height).rev() {
         println!("{}/{}", j, image_height);
         for i in 0..image_width {
             let mut color = v3!(0., 0., 0.);
@@ -51,8 +52,7 @@ fn main() {
                 let r = camera.get_ray(u, v);
                 color = color + ray_color(&r, &world, MAX_DEPTH);
             }
-            let mut img = the_image.lock().unwrap();
-            img.set_with_samples((image_height - j - 1) as usize, i as usize, color, NSAMPLES);
+            the_image.lock().unwrap().set_with_samples((image_height - j - 1) as usize, i as usize, color, NSAMPLES);
         }
     });
     the_image.lock().unwrap().save("test.ppm").unwrap();
