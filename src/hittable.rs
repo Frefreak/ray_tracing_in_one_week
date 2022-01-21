@@ -1,36 +1,38 @@
 use std::sync::Arc;
 
-use vec3::{Point3, Vec3, v3};
+use vec3::{Point3, Vec3};
 
 use crate::{ray::Ray, material::Material};
 
 #[derive(Clone)]
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub p: Point3,
     pub normal: Vec3,
-    pub mat_ptr: Option<Arc<dyn Material>>,
+    pub material: &'a dyn Material,
     pub t: f64,
     pub front_face: bool,
 }
 
-impl HitRecord {
-    pub fn new() -> Self {
+impl<'a> HitRecord<'a> {
+    pub fn new(p: Vec3, t: f64, normal: Vec3, r: Ray, material: &'a dyn Material) -> Self {
+        let front_face = r.direction().dot(&normal) < 0.0;
+        let normal = if front_face {
+            normal
+        } else {
+            -normal
+        };
         Self {
-            p: v3!(0., 0., 0.),
-            normal: v3!(0., 0., 0.),
-            mat_ptr: None,
-            t: 0.,
-            front_face: false,
+            p,
+            normal,
+            material,
+            t,
+            front_face,
         }
-    }
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
-        let front_face = r.direction().dot(&outward_normal) < 0.;
-        self.normal = if front_face { outward_normal } else { -outward_normal };
     }
 }
 
 pub trait Hittable {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
 
@@ -53,17 +55,15 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
-        let mut temp_rec = HitRecord::new();
-        let mut hit_anything = false;
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        let mut temp_rec = None;
         let mut closest_so_far = t_max;
         for obj in &self.objects {
-            if obj.hit(r, t_min, closest_so_far, &mut temp_rec) {
-                hit_anything = true;
-                closest_so_far = temp_rec.t.clone();
-                *rec = temp_rec.clone();
+            if let Some(hit_rec) = obj.hit(r, t_min, closest_so_far) {
+                closest_so_far = hit_rec.t.clone();
+                temp_rec = Some(hit_rec);
             }
         }
-        return hit_anything;
+        temp_rec
     }
 }

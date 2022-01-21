@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use camera::Camera;
-use hittable::{HitRecord, Hittable, HittableList};
+use hittable::{Hittable, HittableList};
 use material::{Lambertian, Metal, Dielectric};
 use ppm::PPM;
 use ray::Ray;
@@ -21,7 +21,7 @@ const NSAMPLES: usize = 100;
 fn main() {
     // image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 800_u32;
+    let image_width = 600_u32;
     let image_height = (image_width as f64 / aspect_ratio) as u32;
     let mut image = PPM::new(image_width, image_height);
 
@@ -30,6 +30,7 @@ fn main() {
     let material_ground = Arc::new(Lambertian::new(&v3!(0.8, 0.8, 0.)));
     let material_center = Arc::new(Lambertian::new(&v3!(0.1, 0.2, 0.5)));
     let material_left = Arc::new(Dielectric::new(1.5));
+
     let material_right = Arc::new(Metal::new(&v3!(0.8, 0.6, 0.2), 0.0));
     world.add(Arc::new(Sphere::new(v3!(0., -100.5, -1.), 100., material_ground)));
     world.add(Arc::new(Sphere::new(v3!(0., 0., -1.), 0.5, material_center)));
@@ -61,11 +62,10 @@ fn ray_color(ray: &Ray, world: &dyn Hittable, depth: u32) -> Color {
     if depth <= 0 {
         return v3!(0., 0., 0.);
     }
-    let mut rec = HitRecord::new();
-    if world.hit(ray, 0.001, utils::INFINITY, &mut rec) {
+    if let Some(rec) = world.hit(ray, 0.001, utils::INFINITY) {
         let mut scattered = Ray::new(v3!(0., 0., 0.), v3!(0., 0., 0.));
-        let mut attenuation = v3!(0., 0., 0.);
-        if rec.mat_ptr.as_ref().unwrap().scatter(ray, &rec, &mut attenuation, &mut scattered) {
+        let mut attenuation = v3!(1., 1., 1.);
+        if rec.material.scatter(ray, &rec, &mut attenuation, &mut scattered) {
             return attenuation * ray_color(&scattered, world, depth - 1);
         }
         return v3!(0., 0., 0.);

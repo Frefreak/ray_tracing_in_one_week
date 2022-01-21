@@ -122,13 +122,9 @@ pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
 /// $$ \mathbf{R}^\prime_\perp = \frac{\eta}{\eta^\prime}
 /// (\mathbf{R} + (-\mathbf{R}\cdot\mathbf{n})\mathbf{n}) $$
 pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
-    let cos_theta = if -uv.dot(n) <  1. {
-        -uv.dot(n)
-    } else {
-        1.
-    };
+    let cos_theta = (-uv).dot(n).min(1.);
     let r_out_perp = etai_over_etat * (uv + cos_theta * n);
-    let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * n;
+    let r_out_parallel = -((1.0 - r_out_perp.length_squared()).abs().sqrt()) * n;
     return r_out_parallel + r_out_perp;
 }
 
@@ -227,3 +223,4 @@ mod test {
         assert_eq!(v1 * 3., v3!(3., 6., 9.));
     }
 }
+

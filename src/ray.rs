@@ -1,5 +1,6 @@
 use vec3::{Vec3, Point3};
 
+#[derive(Clone, Copy)]
 pub struct Ray {
     pub orig: Point3,
     pub dir: Vec3,
