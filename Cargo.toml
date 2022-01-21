@@ -9,6 +9,7 @@ edition = "2021"
 vec3 = { path = "vec3" }
 ppm = { path = "ppm" }
 utils = { path = "utils" }
+rayon = "1.5.1"
 
 [workspace]
 members = ["ppm", "vec3", "utils"]
